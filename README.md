@@ -3,6 +3,8 @@ btrfs-df
 
 Print btrfs file system disk free space, similar to standard df
 
+Currently requires root permission.
+
 Usage:
 
     # btrfs-df 
