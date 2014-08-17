@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# btrfs-df
+
+# version 0.1
+
+# Depends on: btrfs-tools, awk, printf
+
+set -u #v
+
+printf "%-11s %8s %8s %8s %4s %s\n" Filesystem Size Used Avail Use% "Mounted on"
+
+print_listing () {
+	INFO="$(btrfs filesystem show "$1")"
+	TMP="$(echo "$INFO" | grep 'bytes used' | awk '{ print $7 }')"
+	[ ! -z "$TMP" ] && USED="${TMP:0:-1}"
+	
+	TMP="$(echo "$INFO" | grep "$1" | awk '{ print $4 }')"
+	[ ! -z "$TMP" ] && SIZE="${TMP:0:-1}"
+	
+	printf "%-11s %8s %8s %8s %4s %s\n" "$DEVICE" "$SIZE" "$USED" NA NA "$MOUNT"
+}
+
+while read; do
+	TMP="$(echo "$REPLY" | grep btrfs)"
+	FSTYPE="$(echo "$REPLY" | awk '{ print $5 }')"
+	if [ "$FSTYPE" == 'btrfs' ]; then
+		DEVICE="$(echo "$REPLY" | awk '{ print $1 }')"
+		MOUNT="$(echo "$REPLY" | awk '{ print $3 }')"
+		print_listing "$DEVICE" "$MOUNT"
+	fi
+done < <(mount)
